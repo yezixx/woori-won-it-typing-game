@@ -149,6 +149,12 @@ function endGame(status = "gameover") {
 // 게임을 초기화하고 시작하는 함수
 function startGame() {
   if (isGameRunning) return; // 게임이 이미 실행 중이면 새로 시작하지 않음
+
+  if (gamePanelElement.classList.contains("is-ended")) {
+    resetGame(true);
+    return;
+  }
+
   const name = nameElement.value.trim();
 
   if (!name) {
@@ -181,7 +187,7 @@ function startGame() {
 }
 
 // 게임을 리셋하는 함수
-function resetGame() {
+function resetGame(keepName = false) {
   clearInterval(gameInterval); // 타이머 정지
   score = 0;
   timeLeft = 20;
@@ -198,7 +204,9 @@ function resetGame() {
   gamePanelElement.classList.remove("is-playing");
   startButton.hidden = false;
   startButton.innerText = "게임 시작";
-  nameElement.value = "";
+  if (!keepName) {
+    nameElement.value = "";
+  }
   document.removeEventListener("keydown", checkInput); // 키 입력 이벤트 제거
   isGameRunning = false; // 게임 실행 상태를 종료로 설정
 }
