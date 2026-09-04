@@ -1,0 +1,337 @@
+@import url("https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;700;900&family=Roboto+Mono:wght@500;700&display=swap");
+
+:root {
+  --body-bg: #f6f7fb;
+  --panel: #ffffff;
+  --line: #e1e4ec;
+  --screen: #202b44;
+  --screen-text: #f4f6ff;
+  --ink: #20283b;
+  --muted: #697386;
+  --primary: #4055b5;
+  --primary-dark: #304292;
+  --accent: #e86b4a;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+[hidden] {
+  display: none !important;
+}
+
+body {
+  min-height: 100vh;
+  margin: 0;
+  padding: 0 20px 64px;
+  color: var(--ink);
+  background:
+    radial-gradient(circle at 50% -20%, #e7ebff 0, transparent 480px),
+    var(--body-bg);
+  font-family: "Noto Sans KR", sans-serif;
+  font-weight: 500;
+}
+
+.app-bar {
+  margin: 0 -20px;
+  color: #fff;
+  background: var(--primary);
+  box-shadow: 0 2px 8px rgba(32, 43, 68, 0.18);
+}
+
+.app-bar__content {
+  width: min(100% - 40px, 920px);
+  min-height: 76px;
+  margin: auto;
+  display: flex;
+  align-items: center;
+  gap: 14px;
+}
+
+.app-bar__mark {
+  display: grid;
+  width: 42px;
+  height: 42px;
+  place-items: center;
+  border-radius: 50%;
+  color: var(--primary);
+  background: #fff;
+  font:
+    700 14px "Roboto Mono",
+    monospace;
+}
+
+.app-bar h1,
+.app-bar__eyebrow,
+.game-heading h2,
+.section-label {
+  margin: 0;
+}
+
+.app-bar h1 {
+  font-size: 20px;
+  font-weight: 700;
+}
+
+.app-bar__eyebrow,
+.section-label,
+.stat-card__label {
+  color: var(--muted);
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 1px;
+}
+
+.app-bar__eyebrow {
+  color: #cbd3ff;
+  font-size: 10px;
+  text-transform: uppercase;
+}
+
+.game-shell {
+  width: min(100%, 560px);
+  margin: 48px auto 0;
+}
+
+.game-panel {
+  padding: clamp(24px, 6vw, 40px);
+  display: flex;
+  flex-direction: column;
+  background: var(--panel);
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  box-shadow: 0 10px 28px rgba(32, 43, 68, 0.1);
+}
+
+.game-heading {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  margin-bottom: 24px;
+}
+
+.section-label {
+  margin-bottom: 6px;
+  color: var(--primary);
+  text-transform: uppercase;
+}
+
+.game-heading h2 {
+  font-size: clamp(18px, 4vw, 23px);
+  font-weight: 700;
+}
+
+.start-action {
+  margin: 20px 0 12px;
+}
+
+.start-action .button {
+  width: min(100%, 220px);
+  aspect-ratio: 1;
+  display: block;
+  margin: 0 auto;
+  padding: 20px;
+  border-radius: 50%;
+  font-size: 18px;
+  box-shadow: 0 8px 16px rgba(64, 85, 181, 0.28);
+}
+
+#targetChar {
+  min-height: 180px;
+  margin: 4px 0;
+  display: grid;
+  place-items: center;
+  background-color: #fff;
+  border-radius: 20px;
+  color: var(--primary-dark);
+  font-size: clamp(80px, 20vw, 148px);
+  font-family: "Roboto Mono", monospace;
+  font-weight: 500;
+  letter-spacing: 0;
+  line-height: 1;
+  text-shadow: 0 3px 0 #dfe3ff;
+}
+
+#targetChar.is-wrong {
+  color: #d64040;
+}
+
+#targetChar.is-correct {
+  color: #249653;
+}
+
+#targetChar.is-warning {
+  animation: target-warning 700ms steps(1, end) infinite;
+}
+
+.game-status {
+  min-height: 28px;
+  margin: 8px 0 0;
+  color: var(--accent);
+  font:
+    700 20px "Roboto Mono",
+    monospace;
+  text-align: center;
+  text-transform: uppercase;
+}
+
+.game-status:empty {
+  min-height: 0;
+}
+
+.game-panel.is-ended .game-status {
+  order: 1;
+  min-height: 0;
+  margin-top: 20px;
+  color: var(--accent);
+  font-size: clamp(30px, 8vw, 44px);
+}
+
+.game-panel.is-ended .stats {
+  order: 2;
+  display: block;
+  width: min(100%, 220px);
+  margin: 12px auto 16px;
+}
+
+.game-panel.is-ended .stat-card {
+  padding: 10px 14px;
+}
+
+.game-panel.is-ended .stat-card + .stat-card {
+  margin-top: 8px;
+}
+
+.game-panel.is-ended .start-action {
+  order: 3;
+  margin: 0 auto;
+}
+
+.game-panel.is-ended .start-action .button {
+  width: auto;
+  min-height: 36px;
+  aspect-ratio: auto;
+  padding: 7px 18px;
+  border-radius: 6px;
+  font-size: 13px;
+  box-shadow: none;
+}
+
+.game-panel.is-ended .actions {
+  display: none;
+}
+
+@keyframes target-warning {
+  0%,
+  49% {
+    background-color: #fff;
+  }
+
+  50%,
+  100% {
+    background-color: rgba(214, 64, 64, 0.28);
+  }
+}
+
+.stats {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 12px;
+  margin: 20px 0 28px;
+}
+
+.stat-card {
+  padding: 14px 16px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: #fbfbfd;
+}
+
+.stat-card__label {
+  display: block;
+  margin-bottom: 4px;
+}
+
+.stat-card strong {
+  font:
+    700 clamp(18px, 4vw, 24px) "Roboto Mono",
+    monospace;
+}
+
+.actions {
+  display: flex;
+  gap: 12px;
+}
+
+.button {
+  min-height: 48px;
+  flex: 1;
+  padding: 12px 20px;
+  border: 0;
+  border-radius: 8px;
+  font:
+    700 15px "Noto Sans KR",
+    sans-serif;
+  cursor: pointer;
+  touch-action: manipulation;
+  transition:
+    background 160ms ease,
+    box-shadow 160ms ease,
+    transform 160ms ease;
+}
+
+.button--primary {
+  color: #fff;
+  background: var(--primary);
+  box-shadow: 0 3px 6px rgba(64, 85, 181, 0.25);
+}
+
+.button--text {
+  color: var(--primary-dark);
+  background: transparent;
+}
+
+.button:hover {
+  box-shadow: 0 5px 10px rgba(32, 43, 68, 0.16);
+}
+
+.button--primary:hover {
+  background: var(--primary-dark);
+}
+
+.start-action .button--primary:hover {
+  transform: scale(1.03);
+  box-shadow: 0 10px 20px rgba(64, 85, 181, 0.32);
+}
+
+.button--text:hover {
+  background: #eef0ff;
+}
+
+.button:active {
+  transform: translateY(1px);
+}
+
+.button:focus-visible {
+  outline: 3px solid #aab5ff;
+  outline-offset: 2px;
+}
+
+@media (max-width: 420px) {
+  .game-shell {
+    margin-top: 28px;
+  }
+
+  .game-panel {
+    padding: 20px;
+  }
+
+  .start-action .button {
+    width: 180px;
+  }
+
+  .actions {
+    flex-direction: column;
+  }
+}

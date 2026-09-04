@@ -1,0 +1,80 @@
+<!-- 
+    1. 아래 게임의 문제점을 발견하고,
+   개선점을 제시하세요. 정답은 없습니다. 
+    2. 디자인을 개선해보세요.
+    3. css, javascript 파일을 외부로 빼서 따로 관리하도록 변경해주시고
+    4. repository를 새로 만들어서
+    5. github 페이지에 배포해보세요
+ -->
+<!doctype html>
+<html lang="ko">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Typing Game</title>
+    <link rel="stylesheet" href="./exam4.css" />
+    <script src="./exam4.js" defer></script>
+  </head>
+  <body>
+    <header class="app-bar">
+      <div class="app-bar__content">
+        <span class="app-bar__mark">80</span>
+        <div>
+          <p class="app-bar__eyebrow">Practice mode</p>
+          <h1>Typing Trainer</h1>
+        </div>
+      </div>
+    </header>
+
+    <main class="game-shell">
+      <section class="game-panel" aria-labelledby="game-title">
+        <div class="game-heading">
+          <div>
+            <p class="section-label">Letter sprint</p>
+            <h2 id="game-title">다음 문자를 입력하세요</h2>
+          </div>
+        </div>
+
+        <div class="start-action">
+          <button
+            id="startButton"
+            class="button button--primary"
+            onclick="startGame()"
+          >
+            게임 시작
+          </button>
+        </div>
+
+        <div
+          id="targetChar"
+          aria-live="polite"
+          aria-label="입력할 문자"
+          hidden
+        ></div>
+
+        <p id="gameStatus" class="game-status" aria-live="polite"></p>
+
+        <div class="stats" aria-label="게임 정보">
+          <div class="stat-card">
+            <span class="stat-card__label">SCORE</span>
+            <strong id="score">0</strong>
+          </div>
+          <div class="stat-card">
+            <span class="stat-card__label">TIME LEFT</span>
+            <strong id="timer">20초</strong>
+          </div>
+        </div>
+
+        <div class="actions">
+          <button
+            id="resetButton"
+            class="button button--text"
+            onclick="resetGame()"
+          >
+            초기화
+          </button>
+        </div>
+      </section>
+    </main>
+  </body>
+</html>
