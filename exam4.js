@@ -4,6 +4,8 @@ let timeLeft = 20;
 let gameInterval;
 let isGameRunning = false; // 게임이 실행 중인지 확인하는 변수
 let isTargetTransitioning = false;
+let currentName = "";
+const leaderboardStorageKey = "typing-game-leaderboard";
 
 // DOM 요소 참조
 const targetCharElement = document.getElementById("targetChar");
@@ -12,6 +14,9 @@ const timerElement = document.getElementById("timer");
 const startButton = document.getElementById("startButton");
 const gameStatusElement = document.getElementById("gameStatus");
 const gamePanelElement = document.querySelector(".game-panel");
+const nameElement = document.getElementById("playerName");
+const nameErrorElement = document.getElementById("nameError");
+const leaderboardListElement = document.getElementById("leaderboardList");
 
 // 점수 계산에서 제외할 키 리스트
 const excludedKeys = ["Shift", "CapsLock"];
@@ -26,6 +31,43 @@ function getRandomChar() {
 // 새로운 타겟 문자를 설정하는 함수
 function setNewTargetChar() {
   targetCharElement.innerText = getRandomChar();
+}
+
+function getLeaderboard() {
+  try {
+    const savedScores = JSON.parse(localStorage.getItem(leaderboardStorageKey));
+    return Array.isArray(savedScores) ? savedScores : [];
+  } catch (error) {
+    return [];
+  }
+}
+
+function saveScore() {
+  const leaderboard = [...getLeaderboard(), { name: currentName, score }]
+    .sort((first, second) => second.score - first.score)
+    .slice(0, 10);
+
+  localStorage.setItem(leaderboardStorageKey, JSON.stringify(leaderboard));
+  renderLeaderboard();
+}
+
+function renderLeaderboard() {
+  const leaderboard = getLeaderboard();
+  leaderboardListElement.innerHTML = "";
+
+  if (leaderboard.length === 0) {
+    leaderboardListElement.innerHTML =
+      '<li class="leaderboard__empty">아직 기록이 없습니다.</li>';
+    return;
+  }
+
+  leaderboard.forEach((record, index) => {
+    const item = document.createElement("li");
+    item.className = "leaderboard__item";
+    const displayName = record.name || record.nickname;
+    item.innerHTML = `<span>${index + 1}. ${displayName}</span><strong>${record.score}점</strong>`;
+    leaderboardListElement.appendChild(item);
+  });
 }
 
 // 입력된 문자를 확인하고 점수를 업데이트하는 함수
@@ -87,6 +129,7 @@ function updateTimer() {
 // 게임을 종료하고 필요한 정리 작업을 수행하는 함수
 function endGame(status = "gameover") {
   clearInterval(gameInterval);
+  saveScore();
   targetCharElement.innerText = "";
   targetCharElement.hidden = true;
   targetCharElement.classList.remove("is-wrong");
@@ -98,6 +141,7 @@ function endGame(status = "gameover") {
   timerElement.innerText = "0초";
   targetCharElement.classList.remove("is-warning");
   gamePanelElement.classList.add("is-ended");
+  gamePanelElement.classList.remove("is-playing");
   document.removeEventListener("keydown", checkInput); // 키 입력 이벤트 제거
   isGameRunning = false; // 게임 실행 상태를 종료로 설정
 }
@@ -105,6 +149,16 @@ function endGame(status = "gameover") {
 // 게임을 초기화하고 시작하는 함수
 function startGame() {
   if (isGameRunning) return; // 게임이 이미 실행 중이면 새로 시작하지 않음
+  const name = nameElement.value.trim();
+
+  if (!name) {
+    nameErrorElement.innerText = "이름을 입력해주세요!";
+    nameElement.focus();
+    return;
+  }
+
+  currentName = name;
+  nameErrorElement.innerText = "";
   isGameRunning = true; // 게임 실행 상태를 시작으로 설정
 
   score = 0;
@@ -119,6 +173,7 @@ function startGame() {
   timerElement.innerText = `${timeLeft}초`;
   targetCharElement.classList.remove("is-warning");
   gamePanelElement.classList.remove("is-ended");
+  gamePanelElement.classList.add("is-playing");
   setNewTargetChar(); // 첫 번째 타겟 문자 설정
 
   gameInterval = setInterval(updateTimer, 1000); // 1초마다 타이머 업데이트
@@ -140,8 +195,10 @@ function resetGame() {
   isTargetTransitioning = false;
   gameStatusElement.innerText = "";
   gamePanelElement.classList.remove("is-ended");
+  gamePanelElement.classList.remove("is-playing");
   startButton.hidden = false;
   startButton.innerText = "게임 시작";
+  nameElement.value = "";
   document.removeEventListener("keydown", checkInput); // 키 입력 이벤트 제거
   isGameRunning = false; // 게임 실행 상태를 종료로 설정
 }
@@ -158,8 +215,10 @@ function initGame() {
   isTargetTransitioning = false;
   gameStatusElement.innerText = "";
   gamePanelElement.classList.remove("is-ended");
+  gamePanelElement.classList.remove("is-playing");
   startButton.hidden = false;
 }
 
 // 게임 초기화 함수 호출
 initGame();
+renderLeaderboard();
