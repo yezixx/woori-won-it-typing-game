@@ -1,11 +1,3 @@
-<!-- 
-    1. 아래 게임의 문제점을 발견하고,
-   개선점을 제시하세요. 정답은 없습니다. 
-    2. 디자인을 개선해보세요.
-    3. css, javascript 파일을 외부로 빼서 따로 관리하도록 변경해주시고
-    4. repository를 새로 만들어서
-    5. github 페이지에 배포해보세요
- -->
 <!doctype html>
 <html lang="ko">
   <head>
@@ -36,12 +28,21 @@
         </div>
 
         <div class="start-action">
-          <button
-            id="startButton"
-            class="button button--primary"
-          >
+          <button id="startButton" class="button button--primary">
             게임 시작
           </button>
+          <div class="player-form">
+            <input
+              id="playerName"
+              name="name"
+              type="text"
+              maxlength="12"
+              placeholder="이름을 입력하세요"
+              autocomplete="name"
+              aria-label="이름"
+            />
+            <p id="nameError" class="name-error" aria-live="polite"></p>
+          </div>
         </div>
 
         <div
@@ -55,7 +56,7 @@
 
         <div class="stats" aria-label="게임 정보">
           <div class="stat-card">
-            <span class="stat-card__label">SCORE</span>
+            <span class="stat-card__label">SCORE :</span>
             <strong id="score">0</strong>
           </div>
           <div class="stat-card">
@@ -81,6 +82,14 @@
             초기화
           </button>
         </div>
+
+        <section class="leaderboard" aria-labelledby="leaderboard-title">
+          <div class="leaderboard__heading">
+            <h3 id="leaderboard-title">명예의 전당</h3>
+            <span>TOP 10</span>
+          </div>
+          <ol id="leaderboardList" class="leaderboard__list"></ol>
+        </section>
       </section>
     </main>
   </body>

@@ -1,17 +1,22 @@
-// 게임 상태를 관리하는 변수들
+const GAME_DURATION = 20;
+const LETTERS = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz";
+const NUMBERS = "0123456789";
+const EXCLUDED_KEYS = ["Shift", "CapsLock"];
+
 let score = 0;
-let timeLeft = 20;
+let timeLeft = GAME_DURATION;
 let gameInterval;
 let targetAdvanceTimeout;
 let isGameRunning = false; // 게임이 실행 중인지 확인하는 변수
 let isTargetTransitioning = false;
+let currentName = "";
+const leaderboardStorageKey = "typing-game-leaderboard";
 let combo = 0;
 let maxCombo = 0;
 let correctCount = 0;
 let level = 1;
 let highScore = Number(localStorage.getItem("typingHighScore")) || 0;
 
-// DOM 요소 참조
 const targetCharElement = document.getElementById("targetChar");
 const scoreElement = document.getElementById("score");
 const timerElement = document.getElementById("timer");
@@ -21,9 +26,9 @@ const startButton = document.getElementById("startButton");
 const resetButton = document.getElementById("resetButton");
 const gameStatusElement = document.getElementById("gameStatus");
 const gamePanelElement = document.querySelector(".game-panel");
-
-// 점수 계산에서 제외할 키 리스트
-const excludedKeys = ["Shift", "CapsLock"];
+const nameElement = document.getElementById("playerName");
+const nameErrorElement = document.getElementById("nameError");
+const leaderboardListElement = document.getElementById("leaderboardList");
 
 // 종료 화면의 다시 시작 버튼이 포인터를 피하도록 이동시키는 함수
 function evadeRestartButton() {
@@ -49,16 +54,11 @@ function restoreStartButton() {
   startButton.style.top = "";
 }
 
-// 랜덤 문자를 생성하는 함수
 function getRandomChar() {
-  const chars =
-    level >= 2
-      ? "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789"
-      : "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz";
+  const chars = level >= 2 ? LETTERS + NUMBERS : LETTERS;
   return chars[Math.floor(Math.random() * chars.length)];
 }
 
-// 새로운 타겟 문자를 설정하는 함수
 function setNewTargetChar() {
   targetCharElement.innerText = getRandomChar();
   scheduleTargetAdvance();
@@ -89,6 +89,49 @@ function scheduleTargetAdvance() {
   }, displayDuration);
 }
 
+function getLeaderboard() {
+  try {
+    const savedScores = JSON.parse(localStorage.getItem(leaderboardStorageKey));
+    return Array.isArray(savedScores) ? savedScores : [];
+  } catch (error) {
+    return [];
+  }
+}
+
+function saveScore() {
+  const leaderboard = [...getLeaderboard(), { name: currentName, score }]
+    .sort((first, second) => second.score - first.score)
+    .slice(0, 10);
+
+  localStorage.setItem(leaderboardStorageKey, JSON.stringify(leaderboard));
+  renderLeaderboard();
+}
+
+function renderLeaderboard() {
+  const leaderboard = getLeaderboard();
+  leaderboardListElement.innerHTML = "";
+
+  if (leaderboard.length === 0) {
+    const emptyItem = document.createElement("li");
+    emptyItem.className = "leaderboard__empty";
+    emptyItem.textContent = "아직 기록이 없습니다.";
+    leaderboardListElement.appendChild(emptyItem);
+    return;
+  }
+
+  leaderboard.forEach((record, index) => {
+    const item = document.createElement("li");
+    item.className = "leaderboard__item";
+    const displayName = record.name || record.nickname;
+    const name = document.createElement("span");
+    const result = document.createElement("strong");
+    name.textContent = `${index + 1}. ${displayName}`;
+    result.textContent = `${record.score}점`;
+    item.append(name, result);
+    leaderboardListElement.appendChild(item);
+  });
+}
+
 // 입력된 문자를 확인하고 점수를 업데이트하는 함수
 function checkInput(event) {
   const inputChar = event.key;
@@ -100,7 +143,7 @@ function checkInput(event) {
   clearTimeout(targetAdvanceTimeout);
 
   // CapsLock, Shift 등의 키는 무시
-  if (excludedKeys.includes(inputChar)) {
+  if (EXCLUDED_KEYS.includes(inputChar)) {
     return;
   }
 
@@ -157,6 +200,7 @@ function updateTimer() {
 // 게임을 종료하고 필요한 정리 작업을 수행하는 함수
 function endGame(status = "gameover") {
   clearInterval(gameInterval);
+  saveScore();
   clearTimeout(targetAdvanceTimeout);
   const isNewRecord = score > highScore;
 
@@ -176,6 +220,7 @@ function endGame(status = "gameover") {
   timerElement.innerText = "0초";
   targetCharElement.classList.remove("is-warning");
   gamePanelElement.classList.add("is-ended");
+  gamePanelElement.classList.remove("is-playing");
   document.removeEventListener("keydown", checkInput); // 키 입력 이벤트 제거
   isGameRunning = false; // 게임 실행 상태를 종료로 설정
 }
@@ -183,11 +228,27 @@ function endGame(status = "gameover") {
 // 게임을 초기화하고 시작하는 함수
 function startGame() {
   if (isGameRunning) return; // 게임이 이미 실행 중이면 새로 시작하지 않음
+
+  if (gamePanelElement.classList.contains("is-ended")) {
+    resetGame(true);
+    return;
+  }
+
+  const name = nameElement.value.trim();
+
+  if (!name) {
+    nameErrorElement.innerText = "이름을 입력해주세요!";
+    nameElement.focus();
+    return;
+  }
+
+  currentName = name;
+  nameErrorElement.innerText = "";
   isGameRunning = true; // 게임 실행 상태를 시작으로 설정
   restoreStartButton();
 
   score = 0;
-  timeLeft = 20;
+  timeLeft = GAME_DURATION;
   combo = 0;
   maxCombo = 0;
   correctCount = 0;
@@ -204,6 +265,7 @@ function startGame() {
   levelElement.innerText = level;
   targetCharElement.classList.remove("is-warning");
   gamePanelElement.classList.remove("is-ended");
+  gamePanelElement.classList.add("is-playing");
   setNewTargetChar(); // 첫 번째 타겟 문자 설정
 
   gameInterval = setInterval(updateTimer, 1000); // 1초마다 타이머 업데이트
@@ -211,14 +273,14 @@ function startGame() {
 }
 
 // 게임을 리셋하는 함수
-function resetGame() {
+function resetGame(keepName = false) {
   clearInterval(gameInterval); // 타이머 정지
   clearTimeout(targetAdvanceTimeout);
   restoreStartButton();
   resetButton.innerText = "인생은 실전";
   resetButton.disabled = true;
   score = 0;
-  timeLeft = 20;
+  timeLeft = GAME_DURATION;
   combo = 0;
   maxCombo = 0;
   correctCount = 0;
@@ -235,8 +297,12 @@ function resetGame() {
   isTargetTransitioning = false;
   gameStatusElement.innerText = "";
   gamePanelElement.classList.remove("is-ended");
+  gamePanelElement.classList.remove("is-playing");
   startButton.hidden = false;
   startButton.innerText = "게임 시작";
+  if (!keepName) {
+    nameElement.value = "";
+  }
   document.removeEventListener("keydown", checkInput); // 키 입력 이벤트 제거
   isGameRunning = false; // 게임 실행 상태를 종료로 설정
 }
@@ -255,6 +321,7 @@ function initGame() {
   isTargetTransitioning = false;
   gameStatusElement.innerText = "";
   gamePanelElement.classList.remove("is-ended");
+  gamePanelElement.classList.remove("is-playing");
   startButton.hidden = false;
 }
 
@@ -262,3 +329,4 @@ function initGame() {
 startButton.addEventListener("click", startGame);
 startButton.addEventListener("pointerenter", evadeRestartButton);
 initGame();
+renderLeaderboard();
